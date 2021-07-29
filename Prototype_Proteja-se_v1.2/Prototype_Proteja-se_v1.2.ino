@@ -20,8 +20,8 @@ const char* password =  "Brucaline201024"; //password (senha da rede)
 char jsonOutput[128]; // Json passado no body do método post
 
 //Definição de variáveis de retorno do método POST
-int httpCode;
-String payload;
+int httpCode; //Status
+String payload; //Conteúdo
 
 //Definição do IP fixo da rede acima para o ESP32
 IPAddress local_IP(192, 168, 0, 114);
