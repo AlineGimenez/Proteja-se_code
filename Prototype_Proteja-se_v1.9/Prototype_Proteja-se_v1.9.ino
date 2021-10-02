@@ -43,7 +43,7 @@ IPAddress dns(8, 8, 8, 8);
 #define ledVerde 12//----------SUBSTITUIR
 #define pinoBuzzer 13//----------SUBSTITUIR
 
-//Variáveis responsáveis pelos SENSOR BARREIRA
+//Variáveis responsáveis pelo SENSOR BARREIRA
 #define pinoSensorB 26
 
 //Variáveis responsáveis pelos SERVO MOTOR
@@ -52,6 +52,8 @@ Servo dispenser; //variável que receberá o servo motor
 
 #define servoPinD5 5 //PORTA
 Servo porta; //variável que receberá o servo motor
+
+const int sensorPIR = 15; //Variáveis responsáveis pelos SENSOR PIR
 
 String tagLida; //variável que receberá a numeração da tag
 
@@ -190,7 +192,9 @@ void usuario_comum(int type){
  Serial.print(" ºC");
 
  delay(100);
-  
+ 
+Serial.println();
+ 
  dispenser_alcool();
 
   if(type != 0){//retorno para o APP Flutter
@@ -290,6 +294,14 @@ void abrir_porta(int inOut){//recebe uma variável para contabilizar entrada/sa�
     }
   }
   else{//outro sensor --> SAÍDA
+    Serial.println("--- Abrindo a PORTA ---");
+      tempoTela();
+      delay(1000);
+      porta.write(90); //Envia a "pá" do servo motor para 90º
+      delay(1500);//AUMENTAR DE ACORDO COM O TEMPO DE PASSAR UMA PESSOA NA PORTA //----------SUBSTITUIR
+      porta.write(0);//Envia a "pá" do servo motor para 0º
+      delay(100);
+      lotAtual+=inOut; //contabiliza 1 a lotação atual
   }
 }
 
@@ -307,6 +319,54 @@ bool leitura_barreira(){
     Serial.println(contador);
   }
   return respostaBarreira;
+}
+
+/*bool leitura_PIR(){
+  Serial.println("--- Lendo sensor PIR - SAÍDA ---");
+  tempoTela();
+  bool respostaSensor = digitalRead(sensorPIR); //identifica que passou pelo sensor
+  bool respostaPIR;
+  int contador = 0; //contador que auxilia na contagem do tempo
+  delay(100);
+  
+  while(contador <10){//executa enquando o tempo for menor que 30 e quando não se identificou passagem no sensor //----------SUBSTITUIR
+    respostaSensor = digitalRead(sensorPIR);//identifica a leitura do sensor
+    delay(1000);
+    contador+=1;
+    if(respostaSensor == HIGH){
+      respostaPIR = respostaPIR;
+      Serial.println("*Detectou*");
+      Serial.println(contador);
+    }
+    else{
+      Serial.println(contador);
+    }
+  }
+
+  if(respostaSensor == HIGH){
+    return respostaPIR;
+  else
+    return respostaSensor;
+}*/
+
+bool leitura_PIR(){
+  Serial.println("--- Lendo sensor PIR - SAÍDA ---");
+  tempoTela();
+  bool respostaSensor = digitalRead(sensorPIR); //identifica que passou pelo sensor
+  int contador = 0; //contador que auxilia na contagem do tempo
+  delay(100);
+  
+  while(contador <10 && respostaSensor == HIGH){//executa enquando o tempo for menor que 30 e quando não se identificou passagem no sensor //----------SUBSTITUIR
+    respostaSensor = digitalRead(sensorPIR);//identifica a leitura do sensor
+    delay(500);
+    contador+=1;
+    Serial.println(contador);
+    if(respostaSensor == HIGH){
+      respostaPIR = respostaPIR;
+      Serial.println("*Detectou*");
+    }
+  }
+  return respostaSensor;
 }
 
 void handleRoot(){//Quando bater no endpoint '/'
@@ -370,6 +430,8 @@ void setup() {
 
   pinMode(pinoSensorB, INPUT);//Define pino como input para o sensor barreira
 
+  pinMode(sensorPIR, INPUT); //Define pino como input para o sensor PIR
+
   server.enableCORS(); // Inicia o CORS para conecão com o Flutter
   server.on("/solicitartemperatura", HTTP_GET, []() {//Endpoint 'solicitartemperatura'
     Serial.println("--- Recebendo solicitação da API ---");
@@ -386,6 +448,17 @@ void setup() {
 void loop() {
   httpCode = 0;
   payload = "";
+
+  if(leitura_PIR()==HIGH){
+    delay(5000);
+    if(lotAtual == 0){
+      Serial.println("--- ERRO -> leitura atual = 0 ---");
+    }
+    else{
+      abrir_porta(-1);
+    }
+  }
+  
   server.handleClient();//Tratamento do objeto cliente que se conecta ao webserver
   digitalWrite(ledVerde,LOW);
   digitalWrite(ledVermelho,LOW);
