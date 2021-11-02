@@ -96,7 +96,7 @@ void verificar_tag(){
   //VERIFICAR LOTAÇÃO (apenas prossegue se a lotação atual for menor que a lotação máxima do local)
     if(payload == "1") //Caso o retorno do método POST for 1, ou seja, usuário privilegiado:
     {
-      Serial.println("--- Acesso PRIVELEGIADO ---");
+      Serial.println("--- Acesso PRIVILEGIADO ---");
       tempoTela();
       usuario_privilegiado();//Executa módulo do usuário com privilégio
     }
@@ -450,7 +450,7 @@ void loop() {
   payload = "";
 
   if(leitura_PIR()==HIGH){
-    delay(5000);
+    delay(500);
     if(lotAtual == 0){
       Serial.println("--- ERRO -> leitura atual = 0 ---");
     }
@@ -458,6 +458,8 @@ void loop() {
       abrir_porta(-1);
     }
   }
+
+  delay(1500);
   
   server.handleClient();//Tratamento do objeto cliente que se conecta ao webserver
   digitalWrite(ledVerde,LOW);
