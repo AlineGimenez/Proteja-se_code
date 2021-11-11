@@ -75,8 +75,20 @@ void tempoTela(){
 void leitura_tag(){
     Serial.println("--- Escaneando NFC tag ---");
     tempoTela();
+    int contador = 0; //contador que auxilia na contagem do tempo
+    bool aux = false;
+    
+    delay(100);
+    
+    while(contador <2 && aux == false){
+      
+    contador+=1;
+    
+    Serial.println(contador);
+    
     if (nfc.tagPresent())
-    {
+     {
+        aux = true;
         NfcTag tag = nfc.read(); //Executa o método read do objeto NFC e armazena em uma variável to tipo NfcTag
         Serial.println("--- Informações da Tag Lida ---");
         Serial.println();
@@ -85,6 +97,7 @@ void leitura_tag(){
         Serial.println(tagLida);
         
         verificar_tag();
+     }
     }
 }
 
@@ -318,36 +331,13 @@ bool leitura_barreira(){
     contador+=1;
     Serial.println(contador);
   }
+
+  if(respostaBarreira != HIGH){
+      Serial.println("*Detectou*");
+    }
+    
   return respostaBarreira;
 }
-
-/*bool leitura_PIR(){
-  Serial.println("--- Lendo sensor PIR - SAÍDA ---");
-  tempoTela();
-  bool respostaSensor = digitalRead(sensorPIR); //identifica que passou pelo sensor
-  bool respostaPIR;
-  int contador = 0; //contador que auxilia na contagem do tempo
-  delay(100);
-  
-  while(contador <10){//executa enquando o tempo for menor que 30 e quando não se identificou passagem no sensor //----------SUBSTITUIR
-    respostaSensor = digitalRead(sensorPIR);//identifica a leitura do sensor
-    delay(1000);
-    contador+=1;
-    if(respostaSensor == HIGH){
-      respostaPIR = respostaPIR;
-      Serial.println("*Detectou*");
-      Serial.println(contador);
-    }
-    else{
-      Serial.println(contador);
-    }
-  }
-
-  if(respostaSensor == HIGH){
-    return respostaPIR;
-  else
-    return respostaSensor;
-}*/
 
 bool leitura_PIR(){
   Serial.println("--- Lendo sensor PIR - SAÍDA ---");
@@ -357,7 +347,7 @@ bool leitura_PIR(){
   int contador = 0; //contador que auxilia na contagem do tempo
   delay(100);
   
-  while(contador <10 && respostaSensor != HIGH){//executa enquando o tempo for menor que 30 e quando não se identificou passagem no sensor //----------SUBSTITUIR
+  while(contador <5 && respostaSensor != HIGH){//executa enquando o tempo for menor que 5 e quando não se identificou passagem no sensor
     respostaSensor = digitalRead(sensorPIR);//identifica a leitura do sensor
     delay(500);
     contador+=1;
@@ -453,12 +443,17 @@ void loop() {
     delay(500);
     if(lotAtual == 0){
       Serial.println("--- ERRO -> leitura atual = 0 ---");
+      digitalWrite(ledVermelho,HIGH);//Liga LED vermelho
+      digitalWrite(pinoBuzzer, HIGH);//Liga o Buzzer
+      delay(2000);
+      digitalWrite(pinoBuzzer, LOW);//Desliga o Buzzer
+      digitalWrite(ledVermelho,LOW);//Desliga LED vermelho
     }
     else{
       abrir_porta(-1);
     }
   }
-
+  
   delay(1500);
   
   server.handleClient();//Tratamento do objeto cliente que se conecta ao webserver
