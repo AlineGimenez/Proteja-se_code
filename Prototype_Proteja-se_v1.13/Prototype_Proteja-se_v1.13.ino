@@ -24,8 +24,8 @@ Adafruit_MLX90614 mlx = Adafruit_MLX90614(0x5A); //Instância da Biblioteca Adaf
 PN532_I2C pn532_i2c(Wire);//Objeto da comunicação I2C
 NfcAdapter nfc = NfcAdapter(pn532_i2c);//Objeto de leitura NFC
  
-const char* ssid = "WF LIDUENHA"; //user (nome da rede)
-const char* password =  "lidu123!@#"; //password (senha da rede)
+const char* ssid = "Fabiola"; //user (nome da rede)
+const char* password =  "Brucaline201024"; //password (senha da rede)
 char jsonOutput[128]; // Json passado no body do método post
 
 //Definição de variáveis de retorno do método POST
@@ -123,7 +123,9 @@ void verificar_tag(){
     Serial.println("--- Acesso NEGADO ---");
     tempoTela();
     digitalWrite(ledVermelho,HIGH);//Liga LED vermelho
+    digitalWrite(pinoBuzzer, HIGH);//Liga o Buzzer
     delay(2000);
+    digitalWrite(pinoBuzzer, LOW);//Desliga o Buzzer
     digitalWrite(ledVermelho,LOW);//Desliga LED vermelho
   }
 }
@@ -248,7 +250,7 @@ double leituraTemperatura(){
   for(int i=0; i<=5; i++){ //Percorre no período de 10 segundos
     double leituraAmbienteRecebe, leituraObjetoRecebe; //Variáveis que recebem a temperatura (ambiente e objeto) diretamente do sensor
     leituraAmbienteRecebe = mlx.readAmbientTempC(); //Recebe a leitura de ambiente direto do sensor
-    leituraObjetoRecebe = mlx.readObjectTempC() + 06.50;//Recebe a leitura do objeto direto do sensor
+    leituraObjetoRecebe = mlx.readObjectTempC() + 5.00;//Recebe a leitura do objeto direto do sensor
     
     Serial.println();
     Serial.print("Ambient = ");
@@ -291,9 +293,9 @@ void abrir_porta(int inOut){//recebe uma variável para contabilizar entrada/sa�
       Serial.println("--- Abrindo a PORTA ---");
       tempoTela();
       delay(1000);
-      porta.write(90); //Envia a "pá" do servo motor para 90º
+      porta.write(0); //Envia a "pá" do servo motor para 90º
       delay(1500);//AUMENTAR DE ACORDO COM O TEMPO DE PASSAR UMA PESSOA NA PORTA //----------SUBSTITUIR
-      porta.write(0);//Envia a "pá" do servo motor para 0º
+      porta.write(90);//Envia a "pá" do servo motor para 0º
       delay(100);
       lotAtual+=inOut; //contabiliza 1 a lotação atual
     }
@@ -311,9 +313,9 @@ void abrir_porta(int inOut){//recebe uma variável para contabilizar entrada/sa�
     Serial.println("--- Abrindo a PORTA ---");
       tempoTela();
       delay(1000);
-      porta.write(90); //Envia a "pá" do servo motor para 90º
+      porta.write(0); //Envia a "pá" do servo motor para 90º
       delay(1500);//AUMENTAR DE ACORDO COM O TEMPO DE PASSAR UMA PESSOA NA PORTA //----------SUBSTITUIR
-      porta.write(0);//Envia a "pá" do servo motor para 0º
+      porta.write(90);//Envia a "pá" do servo motor para 0º
       delay(100);
       lotAtual+=inOut; //contabiliza 1 a lotação atual
   }
@@ -390,6 +392,7 @@ void endpointSolicitarTemperatura(){
   }
   else{
     server.send(400, "application/json", "LOTACAO MAXIMA");
+    Serial.println("--- LOTAÇÃO MÁXIMA ATINGIDA ---");
     digitalWrite(ledVermelho,HIGH);//Liga LED vermelho
     delay(2000);
     digitalWrite(ledVermelho,LOW);//Desliga LED vermelho
@@ -426,8 +429,8 @@ void setup() {
   server.enableCORS(); // Inicia o CORS para conecão com o Flutter
   server.on("/solicitartemperatura", HTTP_GET, []() {//Endpoint 'solicitartemperatura'
     Serial.println("--- Recebendo solicitação da API ---");
-    delay(500);
     tempoTela();
+    delay(1000);
     endpointSolicitarTemperatura();//Chamando método de execução do endpoint solicitar temperatura
     
     //server.send(200, "application/json", "37.5");//retorna status 200 e e temepratura //----------SUBSTITUIR PELA TEMEPRATURA
